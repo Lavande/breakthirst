@@ -1,4 +1,3 @@
-import CocktailForm from '@/components/cocktails/CocktailForm';
 import CocktailCard from '@/components/cocktails/CocktailCard';
 import { Cocktail } from '@/types';
 import { supabase } from '@/lib/supabase/client';
@@ -28,10 +27,6 @@ export default async function Home() {
           使用BreakThirst轻松提取、保存和分享你喜爱的鸡尾酒配方。
           只需粘贴网页链接，我们就能自动提取配料和制作步骤。
         </p>
-        
-        <div className="max-w-xl mx-auto">
-          <CocktailForm />
-        </div>
       </section>
       
       <section>

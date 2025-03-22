@@ -29,7 +29,7 @@ export default function Header() {
             </ul>
           </div>
           <div className="navbar-end">
-            <Link href="/" className="btn btn-primary">
+            <Link href="/routes/add" className="btn btn-primary">
               添加新配方
             </Link>
           </div>
