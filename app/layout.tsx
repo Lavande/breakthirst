@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
+import { AuthProvider } from '@/lib/context/AuthContext';
 
 export const metadata: Metadata = {
   title: 'BreakThirst | 发现、收集、分享鸡尾酒配方',
@@ -17,11 +18,13 @@ export default function RootLayout({
   return (
     <html lang="zh" data-theme="breakthirst">
       <body>
-        <Header />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <Header />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );
