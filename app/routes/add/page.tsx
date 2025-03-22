@@ -1,11 +1,30 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ExtractResponse } from '@/types';
 import CocktailForm from '@/components/cocktails/CocktailForm';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function AddCocktailPage() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  // 如果正在加载或未登录，显示加载状态
+  if (isLoading || !user) {
+    return (
+      <div className="container-lg py-8 flex justify-center items-center min-h-[400px]">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
   return (
     <div className="container-lg py-8">
       <section className="mb-12">

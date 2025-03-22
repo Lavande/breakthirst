@@ -3,15 +3,22 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Cocktail, ExtractResponse } from '@/types';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function CocktailForm() {
   const router = useRouter();
+  const { user } = useAuth();
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      setError('请先登录后再使用此功能');
+      return;
+    }
     
     if (!url) {
       setError('请输入鸡尾酒配方的网页链接');
@@ -39,6 +46,17 @@ export default function CocktailForm() {
       });
       
       const data: ExtractResponse = await response.json();
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError('请先登录后再使用此功能');
+          router.push('/login');
+          return;
+        }
+        setError(data.error || '无法提取鸡尾酒数据');
+        setLoading(false);
+        return;
+      }
       
       if (!data.success || !data.cocktail) {
         setError(data.error || '无法提取鸡尾酒数据');

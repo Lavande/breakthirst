@@ -4,9 +4,24 @@ import { extractCocktailData } from '@/lib/openai/client';
 import { generateId } from '@/lib/utils/helpers';
 import { supabase } from '@/lib/supabase/client';
 import { ExtractResponse } from '@/types';
+import { cookies } from 'next/headers';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 
 export async function POST(request: Request) {
   try {
+    // 验证用户登录状态
+    const cookieStore = cookies();
+    const supabaseClient = createServerComponentClient({ cookies: () => cookieStore });
+    
+    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+    
+    if (sessionError || !session) {
+      return NextResponse.json<ExtractResponse>({
+        success: false,
+        error: '用户未登录'
+      }, { status: 401 });
+    }
+    
     const { url } = await request.json();
     
     if (!url) {
@@ -47,7 +62,8 @@ export async function POST(request: Request) {
       tags: cocktailData.tags || [],
       source_url: url,
       created_at: now,
-      updated_at: now
+      updated_at: now,
+      user_id: session.user.id // 添加用户ID
     };
     
     // 保存到Supabase
