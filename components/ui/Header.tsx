@@ -1,14 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { FaGlassMartini, FaHeart, FaCog, FaUserCircle } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+import { FaGlassMartini, FaHeart, FaCog, FaUserCircle, FaPlus } from 'react-icons/fa';
 import { useAuth } from '@/lib/context/AuthContext';
 
 export default function Header() {
   const { user, signOut, isLoading } = useAuth();
+  const router = useRouter();
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleAddRecipe = () => {
+    if (user) {
+      router.push('/routes/add');
+    } else {
+      router.push('/login');
+    }
   };
 
   return (
@@ -38,6 +48,10 @@ export default function Header() {
             </ul>
           </div>
           <div className="navbar-end">
+            <button onClick={handleAddRecipe} className="btn btn-secondary mr-2 flex items-center gap-2">
+              <FaPlus /> 添加配方
+            </button>
+            
             {isLoading ? (
               <span className="loading loading-spinner loading-sm"></span>
             ) : user ? (
