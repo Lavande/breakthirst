@@ -2,27 +2,37 @@ import { NextResponse } from 'next/server';
 import { extractContent } from '@/lib/utils/readability';
 import { extractCocktailData } from '@/lib/openai/client';
 import { generateId } from '@/lib/utils/helpers';
-import { supabase } from '@/lib/supabase/client';
 import { ExtractResponse } from '@/types';
-import { cookies } from 'next/headers';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createAPISupabase } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   try {
-    // 验证用户登录状态
-    const cookieStore = cookies();
-    const supabaseClient = createServerComponentClient({ cookies: () => cookieStore });
+    // 使用API Route Handler Client进行认证
+    const supabase = createAPISupabase();
     
-    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+    // 尝试获取用户信息而不仅仅是会话
+    const { data: userData, error: userError } = await supabase.auth.getUser();
     
-    if (sessionError || !session) {
+    // 记录调试信息
+    console.log('用户认证状态:', userData?.user ? '有效' : '无效');
+    if (userError) {
+      console.error('获取用户信息错误:', userError);
+    }
+    
+    // 如果没有有效用户，返回401错误
+    if (!userData.user) {
+      console.error('未找到有效用户，返回401');
       return NextResponse.json<ExtractResponse>({
         success: false,
         error: '用户未登录'
       }, { status: 401 });
     }
     
-    const { url } = await request.json();
+    // 提取请求正文
+    const body = await request.json();
+    const { url } = body;
+    
+    console.log('请求URL:', url);
     
     if (!url) {
       return NextResponse.json<ExtractResponse>({
@@ -63,10 +73,10 @@ export async function POST(request: Request) {
       source_url: url,
       created_at: now,
       updated_at: now,
-      user_id: session.user.id // 添加用户ID
+      user_id: userData.user.id
     };
     
-    // 保存到Supabase
+    // 保存到数据库
     const { error } = await supabase
       .from('cocktails')
       .insert(cocktail);

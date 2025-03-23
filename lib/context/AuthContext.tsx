@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { getCurrentUser, signOut } from '../supabase/auth';
-import { supabase } from '../supabase/client';
+import { createBrowserSupabase } from '../supabase/client';
 
 type AuthContextType = {
   user: User | null;
@@ -22,15 +22,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   // 加载用户信息并订阅身份验证变化
   useEffect(() => {
+    const supabase = createBrowserSupabase();
+    
     const fetchUser = async () => {
       try {
         setIsLoading(true);
         const { user, error } = await getCurrentUser();
         
         if (error) {
+          console.error('获取用户信息时出错:', error);
           throw error;
         }
         
+        console.log('AuthContext: 已获取用户信息', user ? '已登录' : '未登录');
         setUser(user);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('未知错误'));

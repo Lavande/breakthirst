@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Cocktail, ExtractResponse } from '@/types';
 import { useAuth } from '@/lib/context/AuthContext';
+import { createBrowserSupabase } from '@/lib/supabase/client';
 
 export default function CocktailForm() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,13 +38,28 @@ export default function CocktailForm() {
     setError(null);
     
     try {
+      console.log('开始提交表单，用户状态:', user ? '已登录' : '未登录');
+      
+      // 获取最新的访问令牌
+      const supabase = createBrowserSupabase();
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      if (!sessionData.session) {
+        setError('会话已过期，请重新登录');
+        router.push('/login');
+        return;
+      }
+      
       const response = await fetch('/api/cocktails/extract', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ url }),
+        credentials: 'include', // 确保发送cookie
       });
+      
+      console.log('收到响应:', response.status, response.statusText);
       
       const data: ExtractResponse = await response.json();
       
