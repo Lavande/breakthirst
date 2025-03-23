@@ -25,6 +25,7 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 async function getCocktail(id: string): Promise<Cocktail | null> {
+  // 先获取鸡尾酒基本信息
   const { data, error } = await supabase
     .from('cocktails')
     .select('*')
@@ -36,7 +37,25 @@ async function getCocktail(id: string): Promise<Cocktail | null> {
     return null;
   }
   
-  return data;
+  // 如果有user_id，再查询用户名
+  let creator_name = '未知用户';
+  if (data.user_id) {
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', data.user_id)
+      .single();
+      
+    if (profileData?.username) {
+      creator_name = profileData.username;
+    }
+  }
+  
+  // 返回组合后的数据
+  return {
+    ...data,
+    creator_name
+  };
 }
 
 export default async function CocktailPage({ params }: PageProps) {

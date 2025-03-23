@@ -8,6 +8,8 @@ export interface Cocktail {
   source_url: string;
   created_at: string;
   updated_at: string;
+  user_id?: string;
+  creator_name?: string;
 }
 
 export interface CocktailIngredient {

@@ -94,6 +94,9 @@ export default function CocktailDetail({ cocktail }: CocktailDetailProps) {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="text-sm text-gray-600">
               <p>添加时间: {formatDate(cocktail.created_at)}</p>
+              {cocktail.creator_name && (
+                <p className="mt-1">创建者: {cocktail.creator_name}</p>
+              )}
               <a 
                 href={cocktail.source_url} 
                 target="_blank" 
